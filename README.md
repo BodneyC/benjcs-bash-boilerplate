@@ -1,5 +1,5 @@
-Bod's Bash Standard Functions and Variables
-===========================================
+BenJC's Bash Boiletplate
+========================
 
 Adding much unwanted boilerplate to Bash scripting...
 
