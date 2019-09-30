@@ -19,7 +19,10 @@ EARGS=4
 TRUTH=0
 FALSE=1
 
-_ERR=$(tput setaf 1)
-_SUCCESS=$(tput setaf 2)
-_WARNING=$(tput setaf 3)
-_NORMAL=$(tput sgr0)
+ERRO_COL=$(tput setaf 1)
+SUCC_COL=$(tput setaf 2)
+WARN_COL=$(tput setaf 3)
+NORM_COL=$(tput sgr0)
+
+DEBUG=0
+DEBG_COL=$(tput setaf 6)

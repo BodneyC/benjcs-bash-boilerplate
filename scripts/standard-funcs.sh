@@ -8,25 +8,40 @@
 #      line conditionals.
 ###
 
-_ERR=$(tput setaf 1)
-_SUCCESS=$(tput setaf 2)
-_WARNING=$(tput setaf 3)
-_NORMAL=$(tput sgr0)
+ERRO_COL=$(tput setaf 1)
+SUCC_COL=$(tput setaf 2)
+WARN_COL=$(tput setaf 3)
+NORM_COL=$(tput sgr0)
+DEBG_COL=$(tput setaf 6)
 
-_exit_msg() { # exit_{msg,code}
-	printf "%s\n" "$_ERR$1, exiting...$_NORMAL"; exit "$2"
+_msg_ext() { # exit_{msg,code}
+	_msg_dbg "$@"
+	printf "%s\n" "$ERRO_COL$1, exiting...$NORM_COL"; exit "$2"
+}
+
+_msg_dbg() { # exit_{msg,code}
+	if [[ "$DEBUG" == 1 ]]; then
+		if [[ -n "$2" ]]; then
+			printf "%s\n" "${ERRO_COL}[${FUNCNAME[1]//func_/}] $1$NORM_COL"
+			# shellcheck disable=SC2001
+			printf "%s\n%s\n" "${ERRO_COL}Functrace:" \
+				"  $(sed 's/ /\n  /g' <<< "${FUNCNAME[@]}")$NORM_COL"
+			exit "$2"
+		fi
+		printf "%s\n" "${DEBG_COL}[${FUNCNAME[1]//func_/}] $1$NORM_COL"
+	fi
 }
  
 _sig_recv() {
-	printf "%s\n" "${_WARNING}Signal recieved\n$_NORMAL"; exit 1
+	printf "\n%s\n" "${WARN_COL}Signal recieved$NORM_COL"; exit 1
 }
  
 _check_dir_exists() { # dirname, create_dir
 	if [[ ! -d "$1" ]]; then
 		if [[ -n "$2" ]]; then
-			printf "%s\n" "$_WARNING$1 not found, creating...$_NORMAL"
+			printf "%s\n" "$WARN_COL$1 not found, creating...$NORM_COL"
 			mkdir -p "$1"
-			printf "%s\n" "$_SUCCESS$1 created$_NORMAL"
+			printf "%s\n" "$SUCC_COL$1 created$NORM_COL"
 		else
 			return 1
 		fi
@@ -36,10 +51,10 @@ _check_dir_exists() { # dirname, create_dir
 _check_file_exists() { # filename, touch_file
 	if [[ ! -f "$1" ]]; then
 		if [[ -n "$2" ]]; then
-			printf "%s\n" "$_WARNING$1 not found, touching...$_NORMAL"
+			printf "%s\n" "$WARN_COL$1 not found, touching...$NORM_COL"
 			_check_dir_exists "$(dirname "$1")" Y
 			touch "$1"
-			printf "%s\n" "$_SUCCESS$1 touched$_NORMAL"
+			printf "%s\n" "$SUCC_COL$1 touched$NORM_COL"
 		else
 			return 1
 		fi
@@ -54,7 +69,7 @@ _yes_or_no() { # msg
 		case "$REPLY" in
 			[yY]*) return 0 ;;
 			[nN]*) return 1 ;;
-			*)     printf "%s\n" "${_ERR}Invalid option$_NORMAL"
+			*)     printf "%s\n" "${ERRO_COL}Invalid option$NORM_COL"
 		esac
 	done
 }
@@ -66,10 +81,11 @@ _no_args() { # [exit_func, [args,]]
 	fi
 }
 
-declare -A B
+# NOTE: Must `declare -A B` first
 _validate_software() { # progs,
 	for s in "$@"; do
 		hash "$s" || continue
+		# shellcheck disable=SC2034,SC2230
 		B["$s"]="$(which "$s")"
 	done
 }
